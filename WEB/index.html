@@ -2645,7 +2645,7 @@ function abrirRevisionPedido(){
   const plazo = document.createElement("div");
   plazo.className = "plazo-pedido";
   plazo.innerHTML = resumen.tienePersonalizados
-    ? "<strong>Plazo estimado:</strong> 7 a 10 días para elaborar los productos personalizados antes del despacho."
+    ? "<strong>Plazo estimado:</strong> 1 a 2 días para personalizados con grabados laser, 7 a 10 días para productos personalizados con apliques antes del despacho."
     : "<strong>Plazo estimado:</strong> los productos en stock se despachan dentro de las 24 horas luego de confirmado el pago.";
   cont.appendChild(plazo);
 
@@ -2838,7 +2838,7 @@ const OPCIONES_CENTRALES = {
   },
   posaborde: { 
     idOpcion: "posaborde", 
-    nombre: "Posa mate costura de borde", 
+    nombre: "Posa mate", 
     valores: [{ nombre: "Con posa mate costura simple", extra: 0 }, { nombre: "Con posa mate costura borde", extra: 200 }] 
   }
 };

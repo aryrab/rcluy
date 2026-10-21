@@ -1,0 +1,16 @@
+{
+  "routes": [
+    {
+      "src": "/",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i)(whatsapp|facebookexternalhit|facebot|twitterbot|telegrambot|discordbot|slackbot|linkedinbot|pinterest|skypeuripreview|googlebot|bingbot)"
+        }
+      ],
+      "dest": "/api/share"
+    },
+    { "handle": "filesystem" }
+  ]
+}

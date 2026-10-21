@@ -5,15 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RCL Cueros — Catálogo</title>
 <meta name="description" content="RCL Cueros: mates, materas, combos, bombillas y accesorios materos en cuero, con opciones personalizadas y grabado láser. Montevideo, Uruguay.">
+<link rel="canonical" href="https://rcluy.vercel.app/">
+<meta property="og:url" content="https://rcluy.vercel.app/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="RCL Cueros — Mates y accesorios materos">
 <meta property="og:description" content="Mates, materas, combos y personalizados en cuero. Elegí tu producto y coordinamos tu pedido por WhatsApp.">
-<meta property="og:image" content="logob.png">
+<meta property="og:image" content="https://rcluy.vercel.app/logocompleto.png">
 <meta property="og:locale" content="es_UY">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="RCL Cueros — Mates y accesorios materos">
 <meta name="twitter:description" content="Mates, materas, combos y personalizados en cuero.">
-<meta name="twitter:image" content="logocompleto.png">
+<meta name="twitter:image" content="https://rcluy.vercel.app/logocompleto.png">
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2309,10 +2311,13 @@ async function abrirDetalle(id, guardarHistorial = true){
 
   if(p.personalizable) recalcularPrecio();
 
-  // Dentro de tu función abrirDetalle existente:
-if (guardarHistorial) {
-  history.pushState({ tipo: "detalle", id: id }, "", `#producto-${id}`);
-}
+  // Mantiene un enlace directo recuperable al producto, incluso si se recarga la página.
+  if (guardarHistorial) {
+    const urlProducto = new URL(window.location.href);
+    urlProducto.searchParams.set("producto", String(id));
+    urlProducto.hash = `producto-${id}`;
+    history.pushState({ tipo: "detalle", id: String(id) }, "", urlProducto.pathname + urlProducto.search + urlProducto.hash);
+  }
 
 }
 
@@ -2405,22 +2410,32 @@ function verCatalogoGeneral() {
   cerrarDropdown();
 }
 
-window.addEventListener("popstate", (event) => {
-  if (event.state) {
-    // Si hay un estado guardado al volver atrás, restauras esa vista
-    const { vista, id } = event.state;
-    
-    document.querySelectorAll('main').forEach(m => m.style.display = 'none');
-    const vistaObj = document.getElementById(`vista-${vista}`);
-    if (vistaObj) vistaObj.style.display = 'block';
+window.addEventListener("popstate", async (event) => {
+  const estado = event.state;
+  // El detalle usa un estado distinto al de las secciones; tratarlo por separado
+  // evita que Atrás/Adelante deje la pantalla vacía o en una vista incorrecta.
+  if (estado && estado.tipo === "detalle" && estado.id != null) {
+    await abrirProductoPorId(estado.id);
+    return;
+  }
 
-    // Si estabas viendo el detalle de un producto, lo vuelves a abrir
-    if (vista === 'detalle' && id && typeof abrirDetalle === 'function') {
-      abrirDetalle(id, false); // Pasa false para no duplicar la entrada en el historial
-    }
+  const url = new URL(window.location.href);
+  const idUrl = url.searchParams.get("producto");
+  if (idUrl) {
+    await abrirProductoPorId(idUrl);
+    return;
+  }
+
+  const vista = estado && estado.vista ? estado.vista : "inicio";
+  const cat = estado && estado.cat ? estado.cat : null;
+  document.querySelectorAll('main').forEach(m => m.style.display = 'none');
+  if (vista === "detalle") {
+    document.getElementById('vista-inicio').style.display = 'block';
+    return;
+  }
+  if (typeof cambiarVista === "function") {
+    cambiarVista(vista, cat, false);
   } else {
-    // Si vuelve al inicio del todo
-    document.querySelectorAll('main').forEach(m => m.style.display = 'none');
     document.getElementById('vista-inicio').style.display = 'block';
   }
 });
@@ -3077,8 +3092,16 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Guarda la vista inicial en el historial para que la flecha tenga a dónde volver
-  history.replaceState({ tipo: "seccion", vista: "inicio", cat: null }, "", "#inicio");
+  // No pisar el estado del producto compartido: el parámetro debe sobrevivir
+  // al inicio de la aplicación y a las recargas.
+  const urlInicial = new URL(window.location.href);
+  const idProducto = urlInicial.searchParams.get("producto");
+  if (idProducto) {
+    history.replaceState({ tipo: "detalle", id: String(idProducto) }, "", urlInicial.pathname + urlInicial.search + urlInicial.hash);
+  } else {
+    if (!urlInicial.hash) urlInicial.hash = "inicio";
+    history.replaceState({ tipo: "seccion", vista: "inicio", cat: null }, "", urlInicial.pathname + urlInicial.search + urlInicial.hash);
+  }
 });
 
 // ---------- Presentación: chip de categoría activo en el catálogo ----------
@@ -3120,28 +3143,85 @@ function marcarChipActivo(esBusqueda) {
 })();
 
 /* ===== Compartir producto + enlace directo ===== */
-function construirUrlProducto(p){const url=new URL(window.location.href);url.hash="";url.search="";url.searchParams.set("producto",String(p.id));return url.toString();}
-async function copiarEnlaceProducto(url){try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(url);return true;}}catch(e){}const area=document.createElement("textarea");area.value=url;area.style.position="fixed";area.style.left="-9999px";document.body.appendChild(area);area.focus();area.select();let ok=false;try{ok=document.execCommand("copy");}catch(e){}area.remove();return ok;}
-async function compartirProductoActual(){const p=productoActualDetalle;if(!p)return;const url=construirUrlProducto(p);const titulo=String(p.nombre||"Producto RCL Cueros");const texto=`Mirá este producto de RCL Cueros: ${titulo}`;if(navigator.share){try{await navigator.share({title:titulo,text:texto,url:url});return;}catch(error){if(error&&error.name==="AbortError")return;}}const copiado=await copiarEnlaceProducto(url);if(typeof mostrarToast==="function"){mostrarToast(copiado?"Enlace del producto copiado":"No se pudo copiar el enlace");}else{alert(copiado?"Enlace del producto copiado.":"No se pudo copiar el enlace.");}}
-async function abrirProductoDesdeEnlace(){
-  const params = new URLSearchParams(window.location.search);
-  const idCompartido = params.get("producto");
-  if (!idCompartido) return;
+function construirUrlProducto(p) {
+  const url = new URL("https://rcluy.vercel.app/");
+  url.searchParams.set("producto", String(p.id));
+  return url.toString();
+}
+async function copiarEnlaceProducto(url) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(url);
+      return true;
+    }
+  } catch (e) {}
+  const area = document.createElement("textarea");
+  area.value = url;
+  area.style.position = "fixed";
+  area.style.left = "-9999px";
+  document.body.appendChild(area);
+  area.focus(); area.select();
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  area.remove();
+  return ok;
+}
+async function compartirProductoActual() {
+  const p = productoActualDetalle;
+  if (!p) return;
+  const url = construirUrlProducto(p);
+  const titulo = String(p.nombre || "Producto RCL Cueros");
+  const texto = `Mirá este producto de RCL Cueros: ${titulo}`;
+  if (navigator.share) {
+    try { await navigator.share({ title: titulo, text: texto, url }); return; }
+    catch (error) { if (error && error.name === "AbortError") return; }
+  }
+  const copiado = await copiarEnlaceProducto(url);
+  if (typeof mostrarToast === "function") mostrarToast(copiado ? "Enlace del producto copiado" : "No se pudo copiar el enlace");
+  else alert(copiado ? "Enlace del producto copiado." : "No se pudo copiar el enlace.");
+}
+async function abrirProductoPorId(id) {
+  const idBuscado = String(id ?? "").trim();
+  if (!idBuscado) return false;
+  const buscar = () => (Array.isArray(productos) ? productos : []).find(p => String(p.id) === idBuscado);
 
   try {
-    // Espera a que se carguen las categorías: el producto compartido puede no ser destacado.
+    // Primera pasada: cargar catálogo y usar los productos ya normalizados.
     await asegurarCatalogoCompleto();
-    const encontrado = productos.find(p => String(p.id) === String(idCompartido));
-    if (encontrado) {
-      await abrirDetalle(encontrado.id, false);
-    } else {
-      console.warn("No se encontró el producto compartido con ID:", idCompartido);
+    let encontrado = buscar();
+
+    // Segunda pasada: si una categoría falló al cargar, reintentar cada categoría
+    // antes de concluir que el ID no existe.
+    if (!encontrado) {
+      const cats = Object.keys(categoriasData);
+      await Promise.all(cats.map(async cat => {
+        try {
+          const lista = await obtenerCategoriaDesdeSheet(cat, true);
+          agregarAlCatalogo(lista);
+          categoriasCargadas.add(cat);
+        } catch (error) {
+          console.warn("No se pudo reintentar la categoría " + cat, error);
+        }
+      }));
+      encontrado = buscar();
     }
+
+    if (!encontrado) {
+      console.warn("No se encontró el producto compartido con ID:", idBuscado);
+      return false;
+    }
+    await abrirDetalle(encontrado.id, false);
+    return true;
   } catch (error) {
     console.error("No se pudo abrir el producto compartido:", error);
+    return false;
   }
 }
-window.addEventListener("load", () => { abrirProductoDesdeEnlace(); });
+async function abrirProductoDesdeEnlace() {
+  const idCompartido = new URLSearchParams(window.location.search).get("producto");
+  if (idCompartido) await abrirProductoPorId(idCompartido);
+}
+window.addEventListener("load", abrirProductoDesdeEnlace);
 </script>
 
 </body>

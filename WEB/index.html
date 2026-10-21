@@ -2478,7 +2478,7 @@ function agregarDesdeDetalle(abrirPanel = true){
     const esGrabadoTermo = String(p.personalizaciones || "").toLowerCase().split(",").map(t => t.trim()).includes("grabadotermo");
     const textoGrabadoTermo = document.getElementById("det-notas");
     if (esGrabadoTermo && (!textoGrabadoTermo || !textoGrabadoTermo.value.trim())) {
-      alert("Escribí qué querés grabar en el termo antes de agregarlo al carrito.");
+      alert("Escribí qué querés grabar en el termo antes de agregarlo al carrito, si tenes imagenes envíalas al whatsapp.");
       if (textoGrabadoTermo) textoGrabadoTermo.focus();
       return;
     }

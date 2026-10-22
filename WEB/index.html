@@ -403,6 +403,31 @@
 .resumen-pedido-total strong{
   font-family:var(--font-body);font-size:24px;letter-spacing:0;
 }
+.opcion-pago{
+  margin-top:16px;padding:14px 16px;background:var(--fog);
+  border:1px solid var(--mist);border-radius:var(--r-sm);
+}
+.opcion-pago-titulo{
+  font-family:var(--font-label);font-weight:700;font-size:14px;
+  letter-spacing:.038em;text-transform:uppercase;color:var(--slate);
+  margin-bottom:10px;
+}
+.opcion-pago label{
+  display:flex;align-items:center;gap:10px;cursor:pointer;
+  font-size:15px;line-height:1.4;padding:5px 0;
+}
+.opcion-pago input[type="radio"]{
+  width:18px;height:18px;margin:0;flex:none;accent-color:var(--ink);cursor:pointer;
+}
+.opcion-pago .recargo-pago{color:var(--ember);font-weight:700;}
+.resumen-pedido-recargo{
+  display:flex;justify-content:space-between;align-items:baseline;
+  gap:16px;margin-top:8px;padding-top:12px;border-top:1px dashed var(--ash);
+  font-size:14px;color:var(--graphite);
+}
+.resumen-pedido-recargo strong{
+  color:var(--ink);font-variant-numeric:tabular-nums;
+}
 .plazo-pedido{
   margin-top:14px;padding:12px 14px;background:var(--fog);
   border-radius:var(--r-sm);font-size:14px;line-height:1.45;
@@ -1702,6 +1727,17 @@
   </div>
   <div class="modal-sistema-cuerpo">
     <div class="resumen-pedido-modal" id="resumen-pedido-modal"></div>
+    <div class="opcion-pago">
+      <div class="opcion-pago-titulo">Método de pago</div>
+      <label>
+        <input type="radio" name="metodo-pago" value="otro" checked onchange="actualizarResumenPago()">
+        <span>Otro medio de pago</span>
+      </label>
+      <label>
+        <input type="radio" name="metodo-pago" value="mercado-pago" onchange="actualizarResumenPago()">
+        <span>Voy a pagar con Mercado Pago <span class="recargo-pago">(+10%)</span></span>
+      </label>
+    </div>
   </div>
   <div class="modal-sistema-acciones">
     <button type="button" class="btn btn-contorno-oscuro" onclick="cerrarRevisionPedido()">Volver</button>
@@ -2848,11 +2884,68 @@ function obtenerResumenPedido(){
   return { items, totalGeneral, tienePersonalizados };
 }
 
+function obtenerMetodoPago(){
+  const seleccionado = document.querySelector('input[name="metodo-pago"]:checked');
+  return seleccionado ? seleccionado.value : "otro";
+}
+
+function calcularTotalConPago(resumen){
+  const esMercadoPago = obtenerMetodoPago() === "mercado-pago";
+  const recargo = esMercadoPago ? resumen.totalGeneral * 0.10 : 0;
+  return {
+    esMercadoPago,
+    recargo,
+    totalFinal: resumen.totalGeneral + recargo
+  };
+}
+
+function renderizarTotalesRevision(resumen){
+  const cont = document.getElementById("resumen-pedido-modal");
+  if(!cont) return;
+
+  const datosPago = calcularTotalConPago(resumen);
+  const anterior = cont.querySelector(".resumen-pago-dinamico");
+  if(anterior) anterior.remove();
+
+  const bloque = document.createElement("div");
+  bloque.className = "resumen-pago-dinamico";
+
+  if(datosPago.esMercadoPago){
+    bloque.innerHTML = `
+      <div class="resumen-pedido-recargo">
+        <span>Recargo Mercado Pago (10%)</span>
+        <strong>+${formatearPrecio(datosPago.recargo)}</strong>
+      </div>
+      <div class="resumen-pedido-total">
+        <span>Total a pagar</span>
+        <strong>${formatearPrecio(datosPago.totalFinal)}</strong>
+      </div>
+    `;
+  } else {
+    bloque.innerHTML = `
+      <div class="resumen-pedido-total">
+        <span>Total</span>
+        <strong>${formatearPrecio(resumen.totalGeneral)}</strong>
+      </div>
+    `;
+  }
+
+  cont.appendChild(bloque);
+}
+
+function actualizarResumenPago(){
+  if(carrito.length === 0) return;
+  renderizarTotalesRevision(obtenerResumenPedido());
+}
+
 function abrirRevisionPedido(){
   if(carrito.length === 0) return;
 
   const resumen = obtenerResumenPedido();
   const cont = document.getElementById("resumen-pedido-modal");
+
+  const radioOtro = document.querySelector('input[name="metodo-pago"][value="otro"]');
+  if(radioOtro) radioOtro.checked = true;
 
   cont.innerHTML = "";
   resumen.items.forEach(({item, p, subtotal}) => {
@@ -2873,10 +2966,7 @@ function abrirRevisionPedido(){
     cont.appendChild(bloque);
   });
 
-  const total = document.createElement("div");
-  total.className = "resumen-pedido-total";
-  total.innerHTML = `<span>Total</span><strong>${formatearPrecio(resumen.totalGeneral)}</strong>`;
-  cont.appendChild(total);
+  renderizarTotalesRevision(resumen);
 
   const plazo = document.createElement("div");
   plazo.className = "plazo-pedido";
@@ -2920,7 +3010,16 @@ function confirmarEnvioWhatsapp(){
     lineas.push("");
   });
 
-  lineas.push(`*Total a pagar: ${formatearPrecio(resumen.totalGeneral)}*`);
+  const datosPago = calcularTotalConPago(resumen);
+
+  if(datosPago.esMercadoPago){
+    lineas.push(`Recargo Mercado Pago (10%): +${formatearPrecio(datosPago.recargo)}`);
+    lineas.push(`*Total a pagar con Mercado Pago: ${formatearPrecio(datosPago.totalFinal)}*`);
+    lineas.push(`_(Método de pago: Mercado Pago)_`);
+  } else {
+    lineas.push(`*Total a pagar: ${formatearPrecio(resumen.totalGeneral)}*`);
+    lineas.push(`_(Método de pago: Otro medio de pago)_`);
+  }
 
   if(resumen.tienePersonalizados){
     lineas.push("");

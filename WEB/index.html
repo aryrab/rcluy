@@ -3052,8 +3052,43 @@ const OPCIONES_CENTRALES = {
     { idAplique: "escudo_nacional", nombre: "Escudos Peñarol/Nacional", precio: 400 }, 
     { idAplique: "escudo_otros", nombre: "Otros Escudos", precio: 500 }
   ],
-  
-matepremium: {
+ grabado_virola: { 
+    idOpcion: "grabado_virola", 
+    nombre: "Láser en Virola", 
+    valores: [{ nombre: "Sin grabado", extra: 0 }, { nombre: "Con grabado en virola", extra: 350 }] 
+  },
+  grabado_lateral: { 
+    idOpcion: "grabado_lateral", 
+    nombre: "Láser en Lateral", 
+    valores: [{ nombre: "Sin grabado", extra: 0 }, { nombre: "Con grabado en lateral", extra: 250 }] 
+  },
+  grabado_matera: { 
+    idOpcion: "grabado_matera", 
+    nombre: "Láser en Matera", 
+    valores: [{ nombre: "Sin grabado", extra: 0 }, { nombre: "Con grabado en matera", extra: 300 }] 
+  },
+  bombillon: { 
+    idOpcion: "bombillon",
+    avisarSiVacio: true, 
+    nombre: "Bombilla/Bombillón", 
+    valores: [
+      { nombre: "Con bombilla pico loro", extra: 0 },
+      { nombre: "Con bombilla pico recto", extra: 0 },
+      { nombre: "Con bombillón pico loro", extra: 150 },
+      { nombre: "Con bombillón pico recto", extra: 150 }
+    ]
+  },
+  posaborde: { 
+    idOpcion: "posaborde",
+    avisarSiVacio: true, 
+    nombre: "Posa mate",
+    valores: [
+      { nombre: "Con posa mate costura en el medio", extra: 0 },
+      { nombre: "Con posa mate costura en los costados", extra: 0 },
+      { nombre: "Con posa mate costura borde", extra: 200 }
+    ]
+  },
+  matepremium: {
     idOpcion: "matepremium",
     avisarSiVacio: true,
     nombre: "Tipo de mate",
@@ -3062,7 +3097,6 @@ matepremium: {
       { nombre: "Virola bronce (dorada)", extra: 0 }
     ]
   },
-
   tipomate: {
     idOpcion: "tipomate",
     avisarSiVacio: true,
@@ -3072,57 +3106,8 @@ matepremium: {
       { nombre: "Camionero con virola", extra: 0 },
       { nombre: "Camionero sin virola", extra: 0 }
     ]
-  },
-
-  posaborde: {
-    idOpcion: "posaborde",
-    avisarSiVacio: true,
-    nombre: "Posa mate",
-    valores: [
-      { nombre: "Con posa mate costura en el medio", extra: 0 },
-      { nombre: "Con posa mate costura en los costados", extra: 0 },
-      { nombre: "Con posa mate costura borde", extra: 200 }
-    ]
-  },
-
-  bombillon: {
-    idOpcion: "bombillon",
-    avisarSiVacio: true,
-    nombre: "Bombilla/Bombillón",
-    valores: [
-      { nombre: "Con bombilla pico loro", extra: 0 },
-      { nombre: "Con bombilla pico recto", extra: 0 },
-      { nombre: "Con bombillón pico loro", extra: 150 },
-      { nombre: "Con bombillón pico recto", extra: 150 }
-    ]
-  },
-
-  grabado_virola: {
-    idOpcion: "grabado_virola",
-    nombre: "Láser en Virola",
-    valores: [
-      { nombre: "Sin grabado", extra: 0 },
-      { nombre: "Con grabado en virola", extra: 350 }
-    ]
-  },
-
-  grabado_lateral: {
-    idOpcion: "grabado_lateral",
-    nombre: "Láser en Lateral",
-    valores: [
-      { nombre: "Sin grabado", extra: 0 },
-      { nombre: "Con grabado en lateral", extra: 250 }
-    ]
-  },
-
-  grabado_matera: {
-    idOpcion: "grabado_matera",
-    nombre: "Láser en Matera",
-    valores: [
-      { nombre: "Sin grabado", extra: 0 },
-      { nombre: "Con grabado en matera", extra: 300 }
-    ]
-  },
+  }
+};
 
  
 const URL_GOOGLE_SHEET = "https://script.google.com/macros/s/AKfycbxJDpmi4KzrY-im5VELZUSZWmDTXIk5Bs7i_odMyfHYESVk4LSiDYaWjAWQlJFy27ZLtw/exec";
@@ -3210,17 +3195,18 @@ function normalizarProductos(datos) {
       let tags = p.personalizaciones.split(',').map(t => t.trim().toLowerCase());
 
       if (tags.includes("grabadotermo")) productoFinal.personalizable = true;
+      if (tags.includes("tipomate")) productoFinal.opciones.push(OPCIONES_CENTRALES.tipomate);
+      if (tags.includes("matepremium")) productoFinal.opciones.push(OPCIONES_CENTRALES.matepremium);
+      if (tags.includes("posaborde")) productoFinal.opciones.push(OPCIONES_CENTRALES.posaborde);
+      if (tags.includes("bombillon")) productoFinal.opciones.push(OPCIONES_CENTRALES.bombillon);
+      if (tags.includes("apliques")) productoFinal.apliques = OPCIONES_CENTRALES.apliques;
       if (tags.includes("color") || tags.includes("colores")) productoFinal.opciones.push(OPCIONES_CENTRALES.color);
       if (tags.includes("guarda") || tags.includes("guardas")) productoFinal.opciones.push(OPCIONES_CENTRALES.guarda);
       if (tags.includes("material")) productoFinal.opciones.push(OPCIONES_CENTRALES.material);
       if (tags.includes("grabado_virola")) productoFinal.opciones.push(OPCIONES_CENTRALES.grabado_virola);
       if (tags.includes("grabado_lateral")) productoFinal.opciones.push(OPCIONES_CENTRALES.grabado_lateral);
       if (tags.includes("grabado_matera")) productoFinal.opciones.push(OPCIONES_CENTRALES.grabado_matera);
-      if (tags.includes("apliques")) productoFinal.apliques = OPCIONES_CENTRALES.apliques;
-      if (tags.includes("bombillon")) productoFinal.opciones.push(OPCIONES_CENTRALES.bombillon);
-      if (tags.includes("posaborde")) productoFinal.opciones.push(OPCIONES_CENTRALES.posaborde);
-      if (tags.includes("tipomate")) productoFinal.opciones.push(OPCIONES_CENTRALES.tipomate);
-      if (tags.includes("matepremium")) productoFinal.opciones.push(OPCIONES_CENTRALES.matepremium);
+      
     } else {
       productoFinal.personalizable = false;
     }

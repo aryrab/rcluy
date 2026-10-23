@@ -1398,6 +1398,7 @@
           <button type="button" onclick="filtrarCategoria('bombillas')">Bombillas</button>
           <button type="button" onclick="filtrarCategoria('posamates')">Posa mates</button>
           <button type="button" onclick="filtrarCategoria('personalizados')">Personalizados</button>
+          <button type="button" onclick="filtrarCategoria('accesorios')">Accesorios</button>
         </div>
       </div>
 
@@ -1453,7 +1454,8 @@
     <button type="button" class="subcategoria-btn" onclick="filtrarCategoria('bombillas'); toggleMenuLateral();">Bombillas</button>
     <button type="button" class="subcategoria-btn" onclick="filtrarCategoria('posamates'); toggleMenuLateral();">Posa mates</button>
     <button type="button" class="subcategoria-btn" onclick="filtrarCategoria('personalizados'); toggleMenuLateral();">Personalizados</button>
-
+    <button type="button" class="subcategoria-btn" onclick="filtrarCategoria('accesorios'); toggleMenuLateral();">Accesorios</button>
+    
     <button type="button" style="margin-top:12px;" onclick="cambiarVista('info'); toggleMenuLateral();">Pickup / Envíos</button>
     <button type="button" onclick="cambiarVista('contacto'); toggleMenuLateral();">Contacto</button>
   </div>
@@ -1602,6 +1604,7 @@
     <button type="button" class="chip" data-cat="bombillas" onclick="filtrarCategoria('bombillas')">Bombillas</button>
     <button type="button" class="chip" data-cat="posamates" onclick="filtrarCategoria('posamates')">Posa mates</button>
     <button type="button" class="chip" data-cat="personalizados" onclick="filtrarCategoria('personalizados')">Personalizados</button>
+    <button type="button" class="chip" data-cat="accesorios" onclick="filtrarCategoria('accesorios')">Accesorios</button>
   </div>
   <div class="grilla" id="grilla"></div>
 </main>
@@ -1835,7 +1838,8 @@ const categoriasData = {
   personalizados: { nombre: "Personalizados", desc: "Hacemos tu mate único." },
   bombillas: { nombre: "Bombillas", desc: "De alpaca, simplemente calidad." },
   posamates: { nombre: "Posa mates", desc: "Para que tu compañero no se caiga." },
-  termos: { nombre: "Termos", desc: "Para que el agua aguante toda la ronda." }
+  termos: { nombre: "Termos", desc: "Para que el agua aguante toda la ronda." },
+  accesorios: { nombre: "Accesorios", desc: "Todo lo que completa tu equipo matero." },
 };
 
 const iconos = {
@@ -1845,7 +1849,8 @@ const iconos = {
   termos: `<svg viewBox="0 0 24 24" fill="none" stroke="#DAD3C6" stroke-width="1.4"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M7 8h10l-1 12a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2L7 8z"/></svg>`,
   personalizados: `<svg viewBox="0 0 24 24" fill="none" stroke="#DAD3C6" stroke-width="1.4"><path d="M12 2l3 6 6 1-4 4 1 6-6-3-6 3 1-6-4-4 6-1z"/></svg>`,
   bombillas: `<svg viewBox="0 0 24 24" fill="none" stroke="#DAD3C6" stroke-width="1.4"><path d="M2 18h20M5 18l3-12h8l3 12"/></svg>`,
-  posamates: `<svg viewBox="0 0 24 24" fill="none" stroke="#DAD3C6" stroke-width="1.4"><circle cx="12" cy="12" r="9"/></svg>`
+  posamates: `<svg viewBox="0 0 24 24" fill="none" stroke="#DAD3C6" stroke-width="1.4"><circle cx="12" cy="12" r="9"/></svg>`,
+  accesorios: `<svg viewBox="0 0 24 24" fill="none" stroke="#DAD3C6" stroke-width="1.4"><path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z"/></svg>`
 };
 // IMPORTANTE: debe existir desde el arranque. Si no, cualquier lectura de `productos`
 // antes de la primera carga lanza ReferenceError (pasaba con enlaces compartidos en visitas nuevas).
